@@ -111,7 +111,7 @@ def preprocess_pgs_data(file_path):
 
     print(df.head())
     # Define new file name
-    output_file = "PGS001298_hmPOS_GRCh38_cleaned.txt"
+    output_file = OUTPUT_DIR/"PGS001298_hmPOS_GRCh38_cleaned.txt"
 
     # Save as tab-delimited text
     df.to_csv(output_file, sep="\t", index=False)
@@ -152,7 +152,7 @@ def exploratory_analysis(clean_df):
     # plt.show()
 
 
-def plot_chr_effect_weight_histogram(clean_df, chr_num=None, save_dir=None):
+def plot_chr_effect_weight_histogram(clean_df, chr_num=None):
     """
     Plots the distribution of effect_weight for a given chromosome
     and saves the plot in the specified directory.
@@ -177,12 +177,11 @@ def plot_chr_effect_weight_histogram(clean_df, chr_num=None, save_dir=None):
     plt.title(f"Effect Weight Distribution on Chromosome {chr_num}")
 
     # Save plot if save_dir is provided
-    if save_dir:
-        save_dir = Path(save_dir)
-        save_dir.mkdir(parents=True, exist_ok=True)  # create folder if missing
-        save_path = save_dir / f"chr{chr_num}_effect_weight_hist.png"
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"Plot saved to {save_path}")
+
+ # create folder if missing
+    save_path = OUTPUT_DIR / f"chr{chr_num}_effect_weight_hist.png"
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"Plot saved to {save_path}")
 
     # Print variant stats
     print(f"Number of variants on chromosome {chr_num}: {chr_df.shape[0]}")
@@ -208,5 +207,5 @@ if __name__ == "__main__":
     exploratory_analysis(clean_df)
     
     # # Step 4: Chromosome 21 histogram
-    plot_chr_effect_weight_histogram(clean_df, chr_num=2, save_dir=OUTPUT_DIR)
+    plot_chr_effect_weight_histogram(clean_df, chr_num=21)
 
