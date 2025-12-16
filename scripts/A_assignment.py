@@ -1,20 +1,41 @@
+from pathlib import Path
 import gzip
 import shutil
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def unzip_gz_file(gz_path):
+
+# Project root = parent of scripts/
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+DATA_DIR = PROJECT_ROOT / "data"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+
+
+
+
+
+
+def unzip_gz_file(gz_path, data_dir):
     """
-    Unzips a .gz file and returns the unzipped file path.
+    Unzips a .gz file and saves the unzipped file ONLY in data directory.
+    Returns the unzipped file path.
     """
-    txt_path = gz_path.replace(".gz", "")
-    
-    if not os.path.exists(txt_path):
+    gz_path = Path(gz_path)
+    data_dir = Path(data_dir)
+
+    txt_filename = gz_path.stem          # removes .gz
+    txt_path = data_dir / txt_filename   # FORCE data/
+
+    if not txt_path.exists():
         with gzip.open(gz_path, "rb") as f_in:
             with open(txt_path, "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
-    
+        print(f"Unzipped file saved to: {txt_path}")
+    else:
+        print(f"Unzipped file already exists: {txt_path}")
+
     return txt_path
 
 
@@ -128,49 +149,53 @@ def exploratory_analysis(clean_df):
     plt.xlabel("Effect Weight")
     plt.ylabel("Frequency")
     plt.title("Distribution of Effect Weight (All Chromosomes)")
-    plt.show()
+    # plt.show()
 
 
-def plot_chr_effect_weight_histogram(clean_df, chr_num=21, save_path=None):
+def plot_chr_effect_weight_histogram(clean_df, chr_num=None, save_dir=None):
     """
-    Plots the distribution of effect_weight for a given chromosome.
+    Plots the distribution of effect_weight for a given chromosome
+    and saves the plot in the specified directory.
     
     Parameters:
         clean_df (pd.DataFrame): Cleaned PGS DataFrame.
         chr_num (int): Chromosome number to filter (default is 21).
+        save_dir (Path or str): Directory to save the plot. If None, plot is not saved.
     """
     # Filter the specified chromosome
-    chr_df = clean_df[clean_df["hm_chr"] == chr_num]
+    chr_df = clean_df[clean_df["hm_chr"] == chr_num][["hm_chr", "hm_pos", "effect_weight"]]
 
-    # Keep only necessary columns
-    chr_df = chr_df[["hm_chr", "hm_pos", "effect_weight"]]
-
-    # Check if there are variants
     if chr_df.empty:
         print(f"No variants found for chromosome {chr_num}.")
         return
 
     # Plot histogram
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(6, 4))
     plt.hist(chr_df["effect_weight"], bins=50)
     plt.xlabel("Effect Weight")
     plt.ylabel("Frequency")
     plt.title(f"Effect Weight Distribution on Chromosome {chr_num}")
-    # plt.show()
-    if save_path:
+
+    # Save plot if save_dir is provided
+    if save_dir:
+        save_dir = Path(save_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)  # create folder if missing
+        save_path = save_dir / f"chr{chr_num}_effect_weight_hist.png"
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         print(f"Plot saved to {save_path}")
-    # Print variant count and stats
-    print(f"Number of variants on chromosome {chr_num}:", chr_df.shape[0])
+
+    # Print variant stats
+    print(f"Number of variants on chromosome {chr_num}: {chr_df.shape[0]}")
     print(chr_df["effect_weight"].describe())
 
 
 
 if __name__ == "__main__":
-    gz_file = "PGS001298_hmPOS_GRCh38.txt.gz"
     
     # Step 1: Unzip
-    txt_file = unzip_gz_file(gz_file)
+
+    gz_file = DATA_DIR / "PGS001298_hmPOS_GRCh38.txt.gz"
+    txt_file = unzip_gz_file(gz_file, DATA_DIR)
 
     # OR 
     # clean_df = pd.read_csv(gz_file, sep="\t", comment="#", compression='gzip')
@@ -183,4 +208,5 @@ if __name__ == "__main__":
     exploratory_analysis(clean_df)
     
     # # Step 4: Chromosome 21 histogram
-    plot_chr_effect_weight_histogram(clean_df,save_path="chr21_effect_weight_hist.png")
+    plot_chr_effect_weight_histogram(clean_df, chr_num=2, save_dir=OUTPUT_DIR)
+
