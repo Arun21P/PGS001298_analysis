@@ -40,6 +40,12 @@ def unzip_gz_file(gz_path, data_dir):
 
 
 
+#A. a. Data Preprocessing.
+# """
+# Preprocesses the PGS scoring file by removing missing values, filtering to autosomal
+# chromosomes (1–22), enforcing correct data types, and retaining GRCh38 harmonized
+# positions. The cleaned dataset is saved as a tab-delimited file for downstream analysis.
+# """
 
 def preprocess_pgs_data(file_path):
     """
@@ -124,7 +130,12 @@ def preprocess_pgs_data(file_path):
 
 
 
-
+# B. b.Exploratory Analysis.
+# """
+# Performs basic exploratory analysis on the cleaned PGS dataset by reporting dataset size,
+# chromosome-wise variant counts, and summary statistics, and visualizing the distribution
+# of effect weights across all autosomal chromosomes.
+# """
 
 def exploratory_analysis(clean_df):
 
@@ -149,9 +160,22 @@ def exploratory_analysis(clean_df):
     plt.xlabel("Effect Weight")
     plt.ylabel("Frequency")
     plt.title("Distribution of Effect Weight (All Chromosomes)")
-    # plt.show()
+    plt.show()
+ # create folder if missing
+    save_path = OUTPUT_DIR / f"Distribution_of_Effect_Weight.png"
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"Distribution_of_Effect_Weight Plot saved to {save_path}")
 
 
+
+
+
+# C. c. Generate a histogram to depict the distribution of the column “effect_weight” for all the locations of chromosome 21. Only the columns “hm_chr” and “hm_pos” need to be considered for chromosome locations.
+# """
+# Generates and saves a histogram of effect weights for a specified chromosome,
+# summarizing the distribution of variant effect sizes and reporting basic
+# descriptive statistics for that chromosome.
+# """
 def plot_chr_effect_weight_histogram(clean_df, chr_num=None):
     """
     Plots the distribution of effect_weight for a given chromosome
@@ -159,9 +183,9 @@ def plot_chr_effect_weight_histogram(clean_df, chr_num=None):
     
     Parameters:
         clean_df (pd.DataFrame): Cleaned PGS DataFrame.
-        chr_num (int): Chromosome number to filter (default is 21).
-        save_dir (Path or str): Directory to save the plot. If None, plot is not saved.
+        chr_num (int): Chromosome number to filter).
     """
+    
     # Filter the specified chromosome
     chr_df = clean_df[clean_df["hm_chr"] == chr_num][["hm_chr", "hm_pos", "effect_weight"]]
 
@@ -175,18 +199,18 @@ def plot_chr_effect_weight_histogram(clean_df, chr_num=None):
     plt.xlabel("Effect Weight")
     plt.ylabel("Frequency")
     plt.title(f"Effect Weight Distribution on Chromosome {chr_num}")
+    plt.show()
 
-    # Save plot if save_dir is provided
+
 
  # create folder if missing
     save_path = OUTPUT_DIR / f"chr{chr_num}_effect_weight_hist.png"
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    print(f"Plot saved to {save_path}")
+    print(f"Effect Weight Distribution on Chromosome {chr_num} Plot saved to {save_path}")
 
     # Print variant stats
     print(f"Number of variants on chromosome {chr_num}: {chr_df.shape[0]}")
     print(chr_df["effect_weight"].describe())
-
 
 
 if __name__ == "__main__":
@@ -208,4 +232,10 @@ if __name__ == "__main__":
     
     # # Step 4: Chromosome 21 histogram
     plot_chr_effect_weight_histogram(clean_df, chr_num=21)
+
+    print("PGS001298 Analysis Completed")
+    print("Conclusion:The effect weight distribution across all chromosomes is approximately symmetric and centered around zero, indicating that most variants have small additive effects, as expected for a polygenic trait. Chromosome 21 shows a similar pattern but with fewer variants and a slightly narrower spread, suggesting no chromosome-specific bias and a consistent contribution of chr21 variants to the overall polygenic score.")
+
+
+
 
