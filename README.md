@@ -35,7 +35,6 @@ PGS001298_analysis/
 │
 ├── Coding Assessment - Bioinformatics.docx
 ├── requirements.txt
-├── .gitignore
 └── README.md
 ```
 
